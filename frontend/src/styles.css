@@ -1,0 +1,125 @@
+@import './theme.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+  }
+  body {
+    @apply bg-ink-50 text-ink-900;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-surface;
+  }
+  /* Respect a reduced motion preference: spinners and transitions stop. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/*
+ * Chart tokens.
+ *
+ * Categorical slots are assigned in fixed order and never cycled; the first
+ * four slots were validated for colour vision deficiency separation against the
+ * light chart surface. Aqua and yellow sit below 3:1 contrast on that surface,
+ * so every chart ships a legend, direct labels and a values table.
+ */
+.viz-root {
+  color-scheme: light;
+  --surface-1: #fcfcfb;
+  --grid: #e6e6e1;
+  --text-primary: #13161e;
+  --text-secondary: #505b74;
+  --text-muted: #65728d; /* 4.8:1 on the chart surface (WCAG 1.4.3) */
+  --series-1: #2a78d6; /* blue */
+  --series-2: #eb6834; /* orange */
+  --series-3: #1baf7a; /* aqua */
+  --series-4: #eda100; /* yellow */
+  --series-5: #e87ba4; /* magenta */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) .viz-root {
+    color-scheme: dark;
+    --surface-1: #161a22;
+    --grid: #383835;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #9a9a92;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+  }
+}
+
+:root[data-theme='dark'] .viz-root {
+  color-scheme: dark;
+  --surface-1: #161a22;
+  --grid: #383835;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #9a9a92;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-ink-200 bg-surface shadow-sm;
+  }
+  .card-pad {
+    @apply p-4 sm:p-5;
+  }
+  .label {
+    @apply block text-xs font-medium uppercase tracking-wide text-ink-500;
+  }
+  .input {
+    /* A 3:1 boundary identifies the field (1.4.11); placeholders meet 4.5:1 (1.4.3). */
+    /* 16px on phones so iOS does not zoom the page when a field takes focus. */
+    @apply w-full rounded-lg border border-ink-400 bg-surface px-3 py-2 text-base sm:text-sm
+           text-ink-900 placeholder:text-ink-500 focus:border-brand-500
+           focus:outline-none focus:ring-1 focus:ring-brand-500;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2
+           text-sm font-medium transition disabled:cursor-not-allowed
+           disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-hover;
+  }
+  .btn-secondary {
+    @apply btn border border-ink-300 bg-surface text-ink-700 hover:bg-ink-50;
+  }
+  .btn-danger {
+    @apply btn border border-red-300 bg-surface text-red-700 hover:bg-red-50;
+  }
+  .btn-ghost {
+    @apply btn text-ink-600 hover:bg-ink-100;
+  }
+  .th {
+    @apply whitespace-nowrap px-3 py-2 text-left text-xs font-semibold uppercase
+           tracking-wide text-ink-500;
+  }
+  .td {
+    @apply px-3 py-2 align-top text-sm text-ink-800;
+  }
+}

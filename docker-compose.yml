@@ -1,0 +1,157 @@
+# Company hosted deployment (specification section 17.2).
+#
+# Everything in this file runs on company controlled infrastructure. Database,
+# object store and inference ports are bound to localhost only; the web tier is
+# the single published surface and sits behind the company reverse proxy or TLS
+# terminator in production.
+#
+# A single host installation is not high availability.
+
+name: ai-analysis-team
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    environment:
+      MONGO_INITDB_DATABASE: ${APP_MONGO_DB:-ai_analysis_team}
+    volumes:
+      - mongo-data:/data/db
+      - ./deploy/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    ports:
+      - "127.0.0.1:27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      # A first boot initialises the data directory before mongosh answers.
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  mongo-init:
+    # Initialises the single node replica set so multi document transactions,
+    # which the approval cascade uses when available, are supported.
+    image: mongo:7
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: "no"
+    entrypoint:
+      - bash
+      - -c
+      - |
+        mongosh --host mongo:27017 --quiet --eval '
+          try { rs.status() } catch (error) {
+            rs.initiate({_id: "rs0", members: [{_id: 0, host: "mongo:27017"}]})
+          }'
+
+  minio:
+    # Company hosted object storage for originals, recordings and exports.
+    # Enabled with:  docker compose --profile object-store up -d
+    # Without it the API stores the same files on the persistent, company
+    # controlled `api-storage` volume; nothing ever leaves this host either way.
+    profiles: ["object-store"]
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${APP_S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${APP_S3_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_MONGO_URI: mongodb://mongo:27017/?replicaSet=rs0
+      APP_S3_ENDPOINT: http://minio:9000
+      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-production}
+    volumes:
+      - api-storage:/app/var/storage
+    ports:
+      - "127.0.0.1:8000:8000"
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  worker:
+    # Ingestion, AI analysis, exports, connector synchronisation and scheduled
+    # maintenance. Scale with `docker compose up --scale worker=3`.
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_MONGO_URI: mongodb://mongo:27017/?replicaSet=rs0
+      APP_S3_ENDPOINT: http://minio:9000
+      APP_WORKER_HEARTBEAT: /app/var/storage/worker-heartbeat
+    volumes:
+      - api-storage:/app/var/storage
+    command: ["python", "-m", "app.workers.worker"]
+    healthcheck:
+      # The worker serves no HTTP; liveness is the scheduler heartbeat file.
+      test: ["CMD", "python", "-c",
+             "import os,sys,time;p='/app/var/storage/worker-heartbeat';sys.exit(0 if os.path.exists(p) and time.time()-os.path.getmtime(p)<300 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+
+  web:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${APP_WEB_PORT:-8080}:8080"
+
+  # Optional local inference service. Enable with:
+  #   docker compose --profile local-ai up -d
+  # and set APP_LOCAL_INFERENCE_URL=http://inference:11434/v1
+  inference:
+    profiles: ["local-ai"]
+    image: ollama/ollama:0.5.4
+    restart: unless-stopped
+    volumes:
+      - inference-models:/root/.ollama
+    ports:
+      - "127.0.0.1:11434:11434"
+    deploy:
+      resources:
+        limits:
+          memory: 12g
+
+volumes:
+  mongo-data:
+  minio-data:
+  api-storage:
+  inference-models:

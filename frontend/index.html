@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Analysis Team</title>
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // Apply a stored theme before the first paint (see src/lib/theme.ts).
+      try {
+        var theme = localStorage.getItem('ait.theme')
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme
+      } catch (error) { /* storage unavailable: follow the system */ }
+    </script>
+    <meta name="description" content="Company hosted AI analysis team: evidence to approved backlog, estimates and testbooks." />
+  </head>
+  <body class="bg-ink-50 text-ink-900 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

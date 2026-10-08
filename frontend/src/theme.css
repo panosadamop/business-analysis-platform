@@ -1,0 +1,43 @@
+/*
+ * Colour tokens (light and dark).
+ *
+ * Every Tailwind colour the interface uses (ink, brand, amber, red, emerald,
+ * surface, code) reads one of these variables as space separated RGB channels,
+ * so opacity modifiers such as bg-ink-950/40 keep working. Dark mode swaps the
+ * values only; components carry no dark: variants. Each dark text and boundary
+ * pair was checked against WCAG 2.1 AA (4.5:1 text, 3:1 boundaries).
+ *
+ * The theme follows the operating system unless the person picked one, which
+ * sets data-theme="light" or "dark" on <html> (see src/lib/theme.ts).
+ */
+:root {
+  color-scheme: light;
+  --c-ink-50: 246 247 249;  --c-ink-100: 236 238 242;  --c-ink-200: 213 217 226;  --c-ink-300: 176 184 201;  --c-ink-400: 133 145 169;  --c-ink-500: 101 114 141;  --c-ink-600: 80 91 116;  --c-ink-700: 66 74 95;  --c-ink-800: 57 64 80;  --c-ink-900: 31 36 48;  --c-ink-950: 19 22 30;
+  --c-brand-50: 238 244 255;  --c-brand-100: 219 230 254;  --c-brand-200: 191 211 254;  --c-brand-300: 147 180 253;  --c-brand-400: 96 140 250;  --c-brand-500: 59 102 246;  --c-brand-600: 37 70 235;  --c-brand-700: 29 53 216;  --c-brand-800: 30 47 175;  --c-brand-900: 30 45 138;  --c-brand-950: 23 29 84;
+  --c-amber-50: 255 251 235;  --c-amber-200: 253 230 138;  --c-amber-700: 180 83 9;  --c-amber-800: 146 64 14;  --c-amber-900: 120 53 15;
+  --c-red-50: 254 242 242;  --c-red-200: 254 202 202;  --c-red-300: 252 165 165;  --c-red-700: 185 28 28;  --c-red-800: 153 27 27;  --c-red-900: 127 29 29;
+  --c-emerald-50: 236 253 245;  --c-emerald-200: 167 243 208;  --c-emerald-700: 4 120 87;  --c-emerald-800: 6 95 70;
+  --c-surface: 255 255 255;  --c-brand-hover: 29 53 216;  --c-code: 31 36 48;  --c-code-text: 236 238 242;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --c-ink-50: 14 17 23;  --c-ink-100: 31 36 48;  --c-ink-200: 44 51 65;  --c-ink-300: 60 68 86;  --c-ink-400: 110 121 144;  --c-ink-500: 155 164 182;  --c-ink-600: 178 186 203;  --c-ink-700: 201 207 220;  --c-ink-800: 221 225 234;  --c-ink-900: 238 241 246;  --c-ink-950: 0 0 0;
+    --c-brand-50: 24 34 74;  --c-brand-100: 31 45 96;  --c-brand-200: 47 66 138;  --c-brand-300: 74 104 216;  --c-brand-400: 101 132 245;  --c-brand-500: 123 152 251;  --c-brand-600: 51 85 234;  --c-brand-700: 169 189 253;  --c-brand-800: 194 210 254;  --c-brand-900: 219 229 255;  --c-brand-950: 238 243 255;
+    --c-amber-50: 43 32 9;  --c-amber-200: 110 77 16;  --c-amber-700: 243 179 71;  --c-amber-800: 247 196 107;  --c-amber-900: 250 214 144;
+    --c-red-50: 46 19 21;  --c-red-200: 114 43 48;  --c-red-300: 148 64 74;  --c-red-700: 245 142 142;  --c-red-800: 248 171 171;  --c-red-900: 251 199 199;
+    --c-emerald-50: 11 43 32;  --c-emerald-200: 31 93 70;  --c-emerald-700: 76 207 159;  --c-emerald-800: 124 218 182;
+    --c-surface: 22 26 34;  --c-brand-hover: 42 75 230;  --c-code: 11 14 19;  --c-code-text: 223 228 236;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --c-ink-50: 14 17 23;  --c-ink-100: 31 36 48;  --c-ink-200: 44 51 65;  --c-ink-300: 60 68 86;  --c-ink-400: 110 121 144;  --c-ink-500: 155 164 182;  --c-ink-600: 178 186 203;  --c-ink-700: 201 207 220;  --c-ink-800: 221 225 234;  --c-ink-900: 238 241 246;  --c-ink-950: 0 0 0;
+  --c-brand-50: 24 34 74;  --c-brand-100: 31 45 96;  --c-brand-200: 47 66 138;  --c-brand-300: 74 104 216;  --c-brand-400: 101 132 245;  --c-brand-500: 123 152 251;  --c-brand-600: 51 85 234;  --c-brand-700: 169 189 253;  --c-brand-800: 194 210 254;  --c-brand-900: 219 229 255;  --c-brand-950: 238 243 255;
+  --c-amber-50: 43 32 9;  --c-amber-200: 110 77 16;  --c-amber-700: 243 179 71;  --c-amber-800: 247 196 107;  --c-amber-900: 250 214 144;
+  --c-red-50: 46 19 21;  --c-red-200: 114 43 48;  --c-red-300: 148 64 74;  --c-red-700: 245 142 142;  --c-red-800: 248 171 171;  --c-red-900: 251 199 199;
+  --c-emerald-50: 11 43 32;  --c-emerald-200: 31 93 70;  --c-emerald-700: 76 207 159;  --c-emerald-800: 124 218 182;
+  --c-surface: 22 26 34;  --c-brand-hover: 42 75 230;  --c-code: 11 14 19;  --c-code-text: 223 228 236;
+}
